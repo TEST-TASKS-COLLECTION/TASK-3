@@ -8,6 +8,7 @@ async def fetch(url):
     }
 
 async def main():
+    # all the fetches are called at once until they meet the await
     data = await asyncio.gather(
         fetch("1st url"),
         fetch("2nd url"),

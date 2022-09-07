@@ -12,9 +12,9 @@ async def factorial(name, number):
 async def main():
     # Schedule three calls *concurrently*:
     L = await asyncio.gather(
-        factorial("ERROR HAI", NameError),
         factorial("A", 2),
         factorial("B", 3),
+        factorial("ERROR HAI", NameError),
         factorial("C", 4),
         return_exceptions=True
     )

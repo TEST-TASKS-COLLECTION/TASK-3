@@ -29,7 +29,13 @@ async def get_all(session, urls):
     for url in urls:
         task = asyncio.create_task(get_page(session, url))
         tasks.append(task)
-    results = await asyncio.gather(*tasks)
+    done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+    results = []
+    for i in done:
+        results.append(i.result())
+    # print("*"*15)
+    # print(done, pending)
+    # print("*"*15)
     return results
 
 async def main(urls):

@@ -15,6 +15,9 @@ def get_urls():
     soup = bs(res.content, "html.parser")
     items = soup.find_all("a", class_="product-item-link")
     urls = [item.get("href") for item in items if item.get("href")]
+    
+    # fault url
+    urls.append(f"https://www.sastodeal.com/catalogsearch/wrmg/")
     return urls
     
 async def get_page(session, url):
@@ -29,20 +32,24 @@ async def get_all(session, urls):
     for url in urls:
         task = asyncio.create_task(get_page(session, url))
         tasks.append(task)
-    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+    done, _ = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
     results = [d.result() for d in done]
-    done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
-    print(pending)
+    # done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
     # print("*"*15)
     # print(done, pending)
     # print("*"*15)
     return results
 
+def parse_data(data):
+    soup = bs(data, "html.parser")
+    # print(soup.find("h1", class_="page-title"))
+    return soup.select_one(".page-title > span")
+
 async def main(urls):
     async with aiohttp.ClientSession() as session:
         data = await get_all(session, urls)
-        data = [await d.text() for d in data]
-        # print(data)
+        # data = [parse_data(await d.text()).text for d in data if parse_data(await d.text())]
+        data = [parse_data(await d.text()) for d in data]
         return data
     
 if __name__ == "__main__":
@@ -50,5 +57,5 @@ if __name__ == "__main__":
     then = time.time()
     data = asyncio.run(main(urls))
     after = time.time()
-    # print(data)
+    print(data)
     print(f"IT TOOK {after - then}")

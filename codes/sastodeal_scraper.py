@@ -31,6 +31,7 @@ async def get_all(session, urls):
     tasks = []
     for url in urls:
         task = asyncio.create_task(get_page(session, url))
+        task.customData = url
         tasks.append(task)
     results = await asyncio.gather(*tasks, return_exceptions=True)
     return results
@@ -46,6 +47,7 @@ async def main(urls):
         # data = [await d.text() for d in data]
         # data = [parse_data(await d.text()).text for d in data if parse_data(await d.text())]
         data = [parse_data(await d.text()) for d in data]
+        print(data[0])
         return data
     
 if __name__ == "__main__":
@@ -53,6 +55,6 @@ if __name__ == "__main__":
     then = time.time()
     data = asyncio.run(main(urls))
     after = time.time()
-    print(data)
+    # print(data)
     print(len(urls), len(data))
     print(f"IT TOOK {after - then}")

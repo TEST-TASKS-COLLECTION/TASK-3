@@ -31,14 +31,13 @@ async def get_all(session, urls):
     tasks = []
     for url in urls:
         task = asyncio.create_task(get_page(session, url))
+        task.customData = url
         tasks.append(task)
-    done, _ = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
-    results = [d.result() for d in done]
+    # print(tasks)
+    # results = [d.result() for d in done]
     # done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
-    # print("*"*15)
-    # print(done, pending)
-    # print("*"*15)
-    return results
+    return await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+    # return results
 
 def parse_data(data):
     soup = bs(data, "html.parser")
@@ -47,9 +46,18 @@ def parse_data(data):
 
 async def main(urls):
     async with aiohttp.ClientSession() as session:
-        data = await get_all(session, urls)
+        data, _ = await get_all(session, urls)
+        for d in data:
+            # print(d)
+            print(d.customData)
+            status = d.result().status
+            print(status)
+            print(parse_data(await d.result().text()))
+            print()
+            # break
+        # print(list(data)[0].customData)
         # data = [parse_data(await d.text()).text for d in data if parse_data(await d.text())]
-        data = [parse_data(await d.text()) for d in data]
+        # data = [parse_data(await d.result().text()) for d in data]
         return data
     
 if __name__ == "__main__":
@@ -57,5 +65,5 @@ if __name__ == "__main__":
     then = time.time()
     data = asyncio.run(main(urls))
     after = time.time()
-    print(data)
+    # print(data)
     print(f"IT TOOK {after - then}")
